@@ -36,6 +36,8 @@ st.set_page_config(
 # Initialize session state
 if 'summary_cache' not in st.session_state:
     st.session_state.summary_cache = {}
+if 'citations' not in st.session_state:
+    st.session_state.citations = []
 
 # Header
 st.title("📚 AI Research Assistant")
@@ -132,10 +134,13 @@ if uploaded_file:
                 if pdf_data.get('sections'):
                     st.markdown("### 📍 Jump to Section")
                     section_cols = st.columns(len(pdf_data['sections']))
-                    for i, section_name in enumerate(pdf_data['sections'].keys()):
+                    for i, (section_name, start_idx) in enumerate(pdf_data['sections'].items()):
                         with section_cols[i % len(section_cols)]:
                             if st.button(section_name, key=f"nav_{section_name}"):
-                                st.info(f"Section: {section_name}")
+                                preview_start = max(0, start_idx - 350)
+                                preview_end = min(len(pdf_data['text']), start_idx + 650)
+                                preview = pdf_data['text'][preview_start:preview_end]
+                                st.text_area(f"Preview: {section_name}", preview, height=200)
                 
             else:
                 st.error(f"Failed to parse PDF: {response.text}")
@@ -161,7 +166,7 @@ if uploaded_file:
     with tabs[0]:
         st.markdown("### Citation Verification (CrossRef)")
         st.caption("Checks if references are real and findable in academic databases")
-        
+
         if st.button("🔍 Verify All References", type="primary", key="verify_btn"):
             with st.spinner("Verifying citations (20-30 seconds)..."):
                 try:
@@ -170,130 +175,117 @@ if uploaded_file:
                         json={"text": pdf_data['text']},
                         timeout=60
                     )
-                    
                     if response.status_code == 200:
-                        citations = response.json()
-                        
-                        if citations:
-                            # Store in session state
-                            st.session_state.citations = citations
-                            
-                            # Summary metrics
-                            verified = [c for c in citations if c['status'] == 'verified']
-                            suspicious = [c for c in citations if c['status'] == 'suspicious']
-                            not_found = [c for c in citations if c['status'] == 'not_found']
-                            
-                            col1, col2, col3, col4 = st.columns(4)
-                            col1.metric("✅ Verified", len(verified))
-                            col2.metric("⚠️ Suspicious", len(suspicious))
-                            col3.metric("❌ Not Found", len(not_found))
-                            col4.metric("📚 Total", len(citations))
-                            
-                            # Filter options
-                            st.markdown("### Filter Results")
-                            filter_option = st.radio(
-                                "Show:",
-                                ["All", "Verified Only", "Suspicious Only", "Not Found Only"],
-                                horizontal=True,
-                                key="filter_radio"
-                            )
-                            
-                            # Apply filter
-                            if filter_option == "Verified Only":
-                                filtered = verified
-                            elif filter_option == "Suspicious Only":
-                                filtered = suspicious
-                            elif filter_option == "Not Found Only":
-                                filtered = not_found
-                            else:
-                                filtered = citations
-                            
-                            # Display table
-                            if filtered:
-                                st.markdown("### Results Table")
-                                
-                                # Create DataFrame
-                                table_data = []
-                                for cite in filtered:
-                                    status_icon = "✅" if cite['status'] == 'verified' else "⚠️" if cite['status'] == 'suspicious' else "❌"
-                                    
-                                    table_data.append({
-                                        "Status": status_icon,
-                                        "Reference": cite['raw_text'][:60] + "...",
-                                        "Confidence": f"{cite['confidence']:.0%}",
-                                        "DOI": cite.get('doi', ''),
-                                        "Explanation": cite.get('explanation', '')[:50]
-                                    })
-                                
-                                df = pd.DataFrame(table_data)
-                                
-                                # Search box
-                                search_term = st.text_input("🔎 Search references:", key="search_refs")
-                                if search_term:
-                                    df = df[df['Reference'].str.contains(search_term, case=False, na=False)]
-                                
-                                st.dataframe(df, use_container_width=True, height=400)
-                                
-                                # Export BibTeX
-                                if verified:
-                                    st.markdown("### Export Verified Citations")
-                                    
-                                    # Generate BibTeX
-                                    bibtex_entries = []
-                                    for i, cite in enumerate(verified, 1):
-                                        if cite.get('doi'):
-                                            entry = f"@article{{ref{i},\n"
-                                            entry += f"  doi = {{{cite['doi']}}},\n"
-                                            
-                                            if cite.get('title'):
-                                                # Fix: Build title line properly
-                                                title = cite['title'].replace('{', '').replace('}', '')
-                                                entry += "  title = {{" + title + "}},\n"
-                                            
-                                            if cite.get('authors'):
-                                                authors = ' and '.join(cite['authors'][:5])
-                                                entry += f"  author = {{{authors}}},\n"
-                                            
-                                            entry += "}"
-                                            bibtex_entries.append(entry)
-                                    
-                                    bibtex_content = '\n\n'.join(bibtex_entries)
-                                    
-                                    col1, col2 = st.columns(2)
-                                    with col1:
-                                        st.download_button(
-                                            label="📥 Download BibTeX",
-                                            data=bibtex_content,
-                                            file_name="verified_citations.bib",
-                                            mime="text/plain",
-                                            key="download_bibtex"
-                                        )
-                                    with col2:
-                                        if st.button("📋 Copy DOIs", key="copy_dois"):
-                                            dois = [c['doi'] for c in verified if c.get('doi')]
-                                            doi_list = '\n'.join(dois)
-                                            st.code(doi_list, language=None)
+                        st.session_state.citations = response.json() or []
+                        if st.session_state.citations:
+                            st.success("✅ Verification complete")
                         else:
                             st.warning("No references found in this paper")
                     else:
                         st.error(f"Verification failed: {response.text}")
-                        
                 except requests.exceptions.Timeout:
                     st.error("Verification timed out. Try again.")
                 except Exception as e:
                     st.error(f"Error: {str(e)}")
+
+        # Always render current results (persisted)
+        citations = st.session_state.citations
+        if citations:
+            verified = [c for c in citations if c['status'] == 'verified']
+            suspicious = [c for c in citations if c['status'] == 'suspicious']
+            not_found = [c for c in citations if c['status'] == 'not_found']
+
+            col1, col2, col3, col4 = st.columns(4)
+            col1.metric("✅ Verified", len(verified))
+            col2.metric("⚠️ Suspicious", len(suspicious))
+            col3.metric("❌ Not Found", len(not_found))
+            col4.metric("📚 Total", len(citations))
+
+            st.markdown("### Filter Results")
+            filter_option = st.radio(
+                "Show:",
+                ["All", "Verified Only", "Suspicious Only", "Not Found Only"],
+                horizontal=True,
+                key="filter_radio"
+            )
+
+            if filter_option == "Verified Only":
+                filtered = verified
+            elif filter_option == "Suspicious Only":
+                filtered = suspicious
+            elif filter_option == "Not Found Only":
+                filtered = not_found
+            else:
+                filtered = citations
+
+            if filtered:
+                st.markdown("### Results Table")
+                table_data = []
+                for cite in filtered:
+                    status_icon = "✅" if cite['status'] == 'verified' else "⚠️" if cite['status'] == 'suspicious' else "❌"
+                    table_data.append({
+                        "Status": status_icon,
+                        "Reference": (cite.get('title') or cite['raw_text'])[:80] + ("..." if len((cite.get('title') or cite['raw_text'])) > 80 else ""),
+                        "Confidence": f"{cite['confidence']:.0%}",
+                        "DOI": cite.get('doi', ''),
+                        "Explanation": cite.get('explanation', '')
+                    })
+                df = pd.DataFrame(table_data)
+                search_term = st.text_input("🔎 Search references:", key="search_refs")
+                if search_term:
+                    mask = df['Reference'].str.contains(search_term, case=False, na=False) | df['DOI'].str.contains(search_term, case=False, na=False)
+                    df = df[mask]
+                st.dataframe(df, use_container_width=True, height=420)
+
+                if verified:
+                    st.markdown("### Export Verified Citations")
+                    bibtex_entries = []
+                    for i, cite in enumerate(verified, 1):
+                        if cite.get('doi'):
+                            entry = f"@article{{ref{i},\n"
+                            entry += f"  doi = {{{cite['doi']}}},\n"
+                            if cite.get('title'):
+                                title = cite['title'].replace('{', '').replace('}', '')
+                                entry += "  title = {{" + title + "}},\n"
+                            if cite.get('authors'):
+                                authors = ' and '.join(cite['authors'][:5])
+                                entry += f"  author = {{{authors}}},\n"
+                            entry += "}"
+                            bibtex_entries.append(entry)
+                    bibtex_content = '\n\n'.join(bibtex_entries)
+                    col1, col2 = st.columns(2)
+                    with col1:
+                        st.download_button(
+                            label="📥 Download BibTeX",
+                            data=bibtex_content,
+                            file_name="verified_citations.bib",
+                            mime="text/plain",
+                            key="download_bibtex"
+                        )
+                    with col2:
+                        dois = [c['doi'] for c in verified if c.get('doi')]
+                        if st.button("📋 Copy DOIs", key="copy_dois"):
+                            st.code('\n'.join(dois), language=None)
     
     # Tab 2: Statistics Extraction
     with tabs[1]:
         st.markdown("### Statistical Analysis")
         st.caption("Extracts p-values, sample sizes, and identifies potential issues")
-        
+
+        context = st.selectbox(
+            "Context for thresholds:",
+            ["general", "psychology", "clinical", "biology", "cs"],
+            index=0,
+            key="stats_context"
+        )
+
         if st.button("📊 Extract Statistics", type="primary", key="stats_btn"):
             with st.spinner("Analyzing statistics..."):
                 try:
+                    text_with_tag = f"[field:{context}]\n" + pdf_data['text']
                     response = requests.post(
                         f"{API_BASE}/api/extract_statistics",
-                        json={"text": pdf_data['text']},
+                        json={"text": text_with_tag},
                         timeout=30
                     )
                     
@@ -329,12 +321,20 @@ if uploaded_file:
                             if stats['sample_sizes']:
                                 for n in stats['sample_sizes'][:15]:
                                     size = int(''.join(filter(str.isdigit, n)))
-                                    if size < 30:
+                                    threshold_map = {"general": 30, "psychology": 30, "clinical": 50, "biology": 20, "cs": 15}
+                                    cutoff = threshold_map.get(context, 30)
+                                    if size < cutoff:
                                         st.warning(f"⚠️ {n} (small)")
                                     else:
                                         st.write(f"• {n}")
                             else:
                                 st.write("None found")
+
+                        # Confidence intervals
+                        if stats.get('cis'):
+                            st.markdown("#### Confidence Intervals")
+                            for c in stats['cis'][:10]:
+                                st.write(f"• {c}")
                         
                         # Red flags
                         st.markdown("#### Analysis Flags")
@@ -476,64 +476,69 @@ if uploaded_file:
                 3. We'll add Ollama support in the next version!
                 """)
         else:
-            st.caption("This feature uses OpenAI API (costs ~$0.002 per summary)")
-            
-            # Text selection
-            text_length = st.select_slider(
-                "How much text to analyze?",
-                options=["First 1000 chars", "First 3000 chars", "First 5000 chars"],
-                value="First 3000 chars",
-                key="text_slider"
-            )
-            
+            st.caption("This feature uses OpenAI API (map-reduce summary)")
+
+            def chunk_text(text: str, chunk_size: int = 3500, overlap: int = 250):
+                chunks = []
+                i = 0
+                n = len(text)
+                while i < n:
+                    end = min(n, i + chunk_size)
+                    chunks.append(text[i:end])
+                    if end == n:
+                        break
+                    i = max(end - overlap, i + 1)
+                return chunks
+
+            def per_chunk_prompt(chunk: str) -> str:
+                return (
+                    "Read the excerpt and take concise notes as bullet points under these headers: "
+                    "Claims; Numbers; Methods; Limitations; Actionables. Keep each bullet short.\n\n"
+                    f"Excerpt:\n{chunk}"
+                )
+
+            def synthesize_prompt(notes: str) -> str:
+                return (
+                    "Using the collected notes from all chunks, write a brief with exactly these sections: "
+                    "Takeaway; What was done; Findings (with numbers); Skepticism; Next steps. "
+                    "Be concise and specific."\
+                ) + f"\n\nNotes:\n{notes}"
+
             if st.button("📝 Generate Summary", type="primary", key="summary_btn"):
-                # Extract text amount
-                char_limit = int(text_length.split()[1])
-                text_sample = pdf_data['text'][:char_limit]
-                
-                # Create cache key
-                cache_key = hashlib.md5(text_sample.encode()).hexdigest()
-                
-                # Check cache
+                full_text = pdf_data['text']
+                cache_key = hashlib.md5(full_text.encode()).hexdigest()
                 if cache_key in st.session_state.summary_cache:
                     st.success("✅ Using cached summary")
                     st.markdown(st.session_state.summary_cache[cache_key])
                 else:
-                    with st.spinner("Generating summary with AI..."):
+                    with st.spinner("Generating map-reduce summary..."):
                         try:
-                            prompt = f"""
-                            Analyze this research paper and provide:
-                            
-                            1. **Main Topic** (2 sentences)
-                            2. **Key Findings** (3 bullet points)
-                            3. **Methods** (2 sentences)
-                            4. **Significance** (2 sentences)
-                            
-                            Paper text:
-                            {text_sample}
-                            """
-                            
-                            response = openai_client.chat.completions.create(
+                            chunks = chunk_text(full_text)
+                            notes_list = []
+                            for idx, ch in enumerate(chunks):
+                                resp = openai_client.chat.completions.create(
+                                    model="gpt-3.5-turbo",
+                                    messages=[
+                                        {"role": "system", "content": "You are a research paper analysis expert."},
+                                        {"role": "user", "content": per_chunk_prompt(ch)}
+                                    ],
+                                    temperature=0.2,
+                                    max_tokens=350
+                                )
+                                notes_list.append(resp.choices[0].message.content)
+                            combined_notes = "\n\n".join(notes_list)
+                            final = openai_client.chat.completions.create(
                                 model="gpt-3.5-turbo",
                                 messages=[
                                     {"role": "system", "content": "You are a research paper analysis expert."},
-                                    {"role": "user", "content": prompt}
+                                    {"role": "user", "content": synthesize_prompt(combined_notes)}
                                 ],
-                                temperature=0.3,
-                                max_tokens=500
+                                temperature=0.2,
+                                max_tokens=600
                             )
-                            
-                            summary = response.choices[0].message.content
-                            
-                            # Cache it
+                            summary = final.choices[0].message.content
                             st.session_state.summary_cache[cache_key] = summary
-                            
-                            # Display
                             st.markdown(summary)
-                            
-                            # Show cost
-                            st.caption(f"Estimated cost: ~$0.002 | Cached for this session")
-                            
                         except Exception as e:
                             st.error(f"AI generation failed: {str(e)}")
 

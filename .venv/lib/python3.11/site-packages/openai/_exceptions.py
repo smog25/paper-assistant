@@ -1,4 +1,4 @@
-# File generated from our OpenAPI spec by Stainless.
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from __future__ import annotations
 
@@ -8,6 +8,7 @@ from typing_extensions import Literal
 import httpx
 
 from ._utils import is_dict
+from ._models import construct_type
 
 __all__ = [
     "BadRequestError",
@@ -40,19 +41,20 @@ class APIError(OpenAIError):
     If there was no response associated with this error then it will be `None`.
     """
 
-    code: Optional[str]
-    param: Optional[str]
+    code: Optional[str] = None
+    param: Optional[str] = None
     type: Optional[str]
 
     def __init__(self, message: str, request: httpx.Request, *, body: object | None) -> None:
         super().__init__(message)
         self.request = request
         self.message = message
+        self.body = body
 
         if is_dict(body):
-            self.code = cast(Any, body.get("code"))
-            self.param = cast(Any, body.get("param"))
-            self.type = cast(Any, body.get("type"))
+            self.code = cast(Any, construct_type(type_=Optional[str], value=body.get("code")))
+            self.param = cast(Any, construct_type(type_=Optional[str], value=body.get("param")))
+            self.type = cast(Any, construct_type(type_=str, value=body.get("type")))
         else:
             self.code = None
             self.param = None
@@ -74,11 +76,13 @@ class APIStatusError(APIError):
 
     response: httpx.Response
     status_code: int
+    request_id: str | None
 
     def __init__(self, message: str, *, response: httpx.Response, body: object | None) -> None:
         super().__init__(message, response.request, body=body)
         self.response = response
         self.status_code = response.status_code
+        self.request_id = response.headers.get("x-request-id")
 
 
 class APIConnectionError(APIError):

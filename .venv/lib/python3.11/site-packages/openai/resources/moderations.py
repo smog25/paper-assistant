@@ -1,31 +1,38 @@
-# File generated from our OpenAPI spec by Stainless.
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, List, Union
+from typing import List, Union
 from typing_extensions import Literal
 
 import httpx
 
-from ..types import ModerationCreateResponse, moderation_create_params
+from .. import _legacy_response
+from ..types import moderation_create_params
 from .._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from .._utils import maybe_transform
+from .._utils import (
+    maybe_transform,
+    async_maybe_transform,
+)
+from .._compat import cached_property
 from .._resource import SyncAPIResource, AsyncAPIResource
-from .._response import to_raw_response_wrapper, async_to_raw_response_wrapper
-from .._base_client import make_request_options
-
-if TYPE_CHECKING:
-    from .._client import OpenAI, AsyncOpenAI
+from .._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
+from .._base_client import (
+    make_request_options,
+)
+from ..types.moderation_create_response import ModerationCreateResponse
 
 __all__ = ["Moderations", "AsyncModerations"]
 
 
 class Moderations(SyncAPIResource):
-    with_raw_response: ModerationsWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> ModerationsWithRawResponse:
+        return ModerationsWithRawResponse(self)
 
-    def __init__(self, client: OpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = ModerationsWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> ModerationsWithStreamingResponse:
+        return ModerationsWithStreamingResponse(self)
 
     def create(
         self,
@@ -40,7 +47,7 @@ class Moderations(SyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> ModerationCreateResponse:
         """
-        Classifies if text violates OpenAI's Content Policy
+        Classifies if text is potentially harmful.
 
         Args:
           input: The input text to classify
@@ -79,11 +86,13 @@ class Moderations(SyncAPIResource):
 
 
 class AsyncModerations(AsyncAPIResource):
-    with_raw_response: AsyncModerationsWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> AsyncModerationsWithRawResponse:
+        return AsyncModerationsWithRawResponse(self)
 
-    def __init__(self, client: AsyncOpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = AsyncModerationsWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> AsyncModerationsWithStreamingResponse:
+        return AsyncModerationsWithStreamingResponse(self)
 
     async def create(
         self,
@@ -98,7 +107,7 @@ class AsyncModerations(AsyncAPIResource):
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
     ) -> ModerationCreateResponse:
         """
-        Classifies if text violates OpenAI's Content Policy
+        Classifies if text is potentially harmful.
 
         Args:
           input: The input text to classify
@@ -122,7 +131,7 @@ class AsyncModerations(AsyncAPIResource):
         """
         return await self._post(
             "/moderations",
-            body=maybe_transform(
+            body=await async_maybe_transform(
                 {
                     "input": input,
                     "model": model,
@@ -138,13 +147,35 @@ class AsyncModerations(AsyncAPIResource):
 
 class ModerationsWithRawResponse:
     def __init__(self, moderations: Moderations) -> None:
-        self.create = to_raw_response_wrapper(
+        self._moderations = moderations
+
+        self.create = _legacy_response.to_raw_response_wrapper(
             moderations.create,
         )
 
 
 class AsyncModerationsWithRawResponse:
     def __init__(self, moderations: AsyncModerations) -> None:
-        self.create = async_to_raw_response_wrapper(
+        self._moderations = moderations
+
+        self.create = _legacy_response.async_to_raw_response_wrapper(
+            moderations.create,
+        )
+
+
+class ModerationsWithStreamingResponse:
+    def __init__(self, moderations: Moderations) -> None:
+        self._moderations = moderations
+
+        self.create = to_streamed_response_wrapper(
+            moderations.create,
+        )
+
+
+class AsyncModerationsWithStreamingResponse:
+    def __init__(self, moderations: AsyncModerations) -> None:
+        self._moderations = moderations
+
+        self.create = async_to_streamed_response_wrapper(
             moderations.create,
         )

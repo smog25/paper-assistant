@@ -1,31 +1,40 @@
-# File generated from our OpenAPI spec by Stainless.
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union, Mapping, cast
+from typing import Union, Mapping, cast
 from typing_extensions import Literal
 
 import httpx
 
+from ... import _legacy_response
 from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven, FileTypes
-from ..._utils import extract_files, maybe_transform, deepcopy_minimal
+from ..._utils import (
+    extract_files,
+    maybe_transform,
+    deepcopy_minimal,
+    async_maybe_transform,
+)
+from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
-from ..._response import to_raw_response_wrapper, async_to_raw_response_wrapper
-from ...types.audio import Translation, translation_create_params
-from ..._base_client import make_request_options
-
-if TYPE_CHECKING:
-    from ..._client import OpenAI, AsyncOpenAI
+from ..._response import to_streamed_response_wrapper, async_to_streamed_response_wrapper
+from ...types.audio import translation_create_params
+from ..._base_client import (
+    make_request_options,
+)
+from ...types.audio.translation import Translation
 
 __all__ = ["Translations", "AsyncTranslations"]
 
 
 class Translations(SyncAPIResource):
-    with_raw_response: TranslationsWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> TranslationsWithRawResponse:
+        return TranslationsWithRawResponse(self)
 
-    def __init__(self, client: OpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = TranslationsWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> TranslationsWithStreamingResponse:
+        return TranslationsWithStreamingResponse(self)
 
     def create(
         self,
@@ -49,7 +58,8 @@ class Translations(SyncAPIResource):
           file: The audio file object (not file name) translate, in one of these formats: flac,
               mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
 
-          model: ID of the model to use. Only `whisper-1` is currently available.
+          model: ID of the model to use. Only `whisper-1` (which is powered by our open source
+              Whisper V2 model) is currently available.
 
           prompt: An optional text to guide the model's style or continue a previous audio
               segment. The
@@ -88,7 +98,6 @@ class Translations(SyncAPIResource):
             # sent to the server will contain a `boundary` parameter, e.g.
             # multipart/form-data; boundary=---abc--
             extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-
         return self._post(
             "/audio/translations",
             body=maybe_transform(body, translation_create_params.TranslationCreateParams),
@@ -101,11 +110,13 @@ class Translations(SyncAPIResource):
 
 
 class AsyncTranslations(AsyncAPIResource):
-    with_raw_response: AsyncTranslationsWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> AsyncTranslationsWithRawResponse:
+        return AsyncTranslationsWithRawResponse(self)
 
-    def __init__(self, client: AsyncOpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = AsyncTranslationsWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> AsyncTranslationsWithStreamingResponse:
+        return AsyncTranslationsWithStreamingResponse(self)
 
     async def create(
         self,
@@ -129,7 +140,8 @@ class AsyncTranslations(AsyncAPIResource):
           file: The audio file object (not file name) translate, in one of these formats: flac,
               mp3, mp4, mpeg, mpga, m4a, ogg, wav, or webm.
 
-          model: ID of the model to use. Only `whisper-1` is currently available.
+          model: ID of the model to use. Only `whisper-1` (which is powered by our open source
+              Whisper V2 model) is currently available.
 
           prompt: An optional text to guide the model's style or continue a previous audio
               segment. The
@@ -168,10 +180,9 @@ class AsyncTranslations(AsyncAPIResource):
             # sent to the server will contain a `boundary` parameter, e.g.
             # multipart/form-data; boundary=---abc--
             extra_headers = {"Content-Type": "multipart/form-data", **(extra_headers or {})}
-
         return await self._post(
             "/audio/translations",
-            body=maybe_transform(body, translation_create_params.TranslationCreateParams),
+            body=await async_maybe_transform(body, translation_create_params.TranslationCreateParams),
             files=files,
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
@@ -182,13 +193,35 @@ class AsyncTranslations(AsyncAPIResource):
 
 class TranslationsWithRawResponse:
     def __init__(self, translations: Translations) -> None:
-        self.create = to_raw_response_wrapper(
+        self._translations = translations
+
+        self.create = _legacy_response.to_raw_response_wrapper(
             translations.create,
         )
 
 
 class AsyncTranslationsWithRawResponse:
     def __init__(self, translations: AsyncTranslations) -> None:
-        self.create = async_to_raw_response_wrapper(
+        self._translations = translations
+
+        self.create = _legacy_response.async_to_raw_response_wrapper(
+            translations.create,
+        )
+
+
+class TranslationsWithStreamingResponse:
+    def __init__(self, translations: Translations) -> None:
+        self._translations = translations
+
+        self.create = to_streamed_response_wrapper(
+            translations.create,
+        )
+
+
+class AsyncTranslationsWithStreamingResponse:
+    def __init__(self, translations: AsyncTranslations) -> None:
+        self._translations = translations
+
+        self.create = async_to_streamed_response_wrapper(
             translations.create,
         )

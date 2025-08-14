@@ -18,18 +18,21 @@ sudo apt-get install tesseract-ocr poppler-utils
 
 ## Python Setup
 
-1. Create virtual environment:
-python -m venv venv
+1. Use Python 3.11 (recommended):
+python3 --version  # should show 3.11.x
+
+2. Create virtual environment:
+python3 -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
-2. Install dependencies:
+3. Install dependencies:
 pip install -r requirements.txt
 
-3. Create .env file from example:
+4. Create .env file from example:
 cp .env.example .env
 # Edit .env and add:
-# - Your email for CrossRef (REQUIRED)
-# - OpenAI API key (optional, for AI summaries)
+# - CROSSREF_EMAIL (REQUIRED)
+# - OPENAI_API_KEY (optional, for AI summaries)
 # - POPPLER_PATH (Windows only)
 
 ## Running the Application

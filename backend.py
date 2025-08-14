@@ -13,6 +13,7 @@ from datetime import datetime
 import re
 import httpx
 import asyncio
+import difflib
 import hashlib
 import pypdf
 import io
@@ -126,6 +127,7 @@ class StatisticsResult(BaseModel):
     p_values: List[str]
     sample_sizes: List[str]
     effect_sizes: List[str]
+    cis: List[str]
     red_flags: List[str]
     summary: str
 
@@ -158,13 +160,13 @@ def get_cache_key(text: str) -> str:
     """Generate consistent cache key"""
     return hashlib.md5(text.encode()).hexdigest()
 
-async def crossref_query(http: httpx.AsyncClient, query: str, use_title: bool = False) -> Optional[dict]:
+async def crossref_query(http: httpx.AsyncClient, query: str, use_title: bool = False, rows: int = 1) -> Optional[dict]:
     """Query Crossref with retries and proper parameters"""
     url = "https://api.crossref.org/works"
     
     params = {
         "query.bibliographic" if not use_title else "query.title": query,
-        "rows": 1,
+        "rows": rows,
         "mailto": CROSSREF_EMAIL
     }
     
@@ -254,6 +256,23 @@ def get_year_from_item(item: dict) -> Optional[str]:
             if year:
                 return str(year)
     return None
+
+def first_year(item: dict) -> Optional[str]:
+    """Return first available year from Crossref item: published-print, published-online, issued."""
+    for field in ['published-print', 'published-online', 'issued']:
+        if item.get(field) and item[field].get('date-parts'):
+            year = item[field]['date-parts'][0][0]
+            if year:
+                return str(year)
+    return None
+
+def title_similarity(a: str, b: str) -> float:
+    """Compute similarity 0..1 between two titles using difflib.SequenceMatcher."""
+    if not a or not b:
+        return 0.0
+    a_norm = re.sub(r'\s+', ' ', a).strip().lower()
+    b_norm = re.sub(r'\s+', ' ', b).strip().lower()
+    return difflib.SequenceMatcher(None, a_norm, b_norm).ratio()
 
 # --- ENDPOINTS ---
 
@@ -395,7 +414,7 @@ async def parse_pdf_ocr(file: UploadFile = File(...)):
 
 @app.post("/api/verify_references", response_model=List[Citation])
 async def verify_references(request: Request, body: TextBody):
-    """Verify references using Crossref"""
+    """Verify references using Crossref with DOI-first and title similarity scoring"""
     
     ref_section = extract_references_section(body.text)
     if not ref_section:
@@ -420,100 +439,107 @@ async def verify_references(request: Request, body: TextBody):
             author_pattern = r'([A-Z][a-z]+)(?:\s*,|\s+and\s+|\s+&\s+)'
             author_matches = re.findall(author_pattern, reference)[:5]
             
-            data = await crossref_query(request.app.state.http, clean_ref)
-            
-            if data and data.get('message', {}).get('items'):
-                item = data['message']['items'][0]
-                score = item.get('score', 0)
-                
-                if 40 <= score <= 70:
-                    title_match = re.match(r'^[^.]+', clean_ref)
-                    if title_match:
-                        title_data = await crossref_query(
-                            request.app.state.http, 
-                            title_match.group(0), 
-                            use_title=True
-                        )
-                        if title_data and title_data.get('message', {}).get('items'):
-                            title_item = title_data['message']['items'][0]
-                            if title_item.get('score', 0) > score:
-                                item = title_item
-                                score = title_item.get('score', 0)
-                
-                confidence_boost = 0
-                explanation_parts = []
-                
-                # Check year with fallbacks
+            # DOI-first (exact) then rows=3 search scored by base + 40*title_similarity
+            doi_in_ref = re.search(r'10\.\d{4,}/[-._;()/:\\w]+', reference)
+            item = None
+            base = 0.0
+            title_sim_val = 0.0
+            doi_ok = False
+            if doi_in_ref:
+                doi = doi_in_ref.group(0)
+                work_url = f"https://api.crossref.org/works/{doi}"
+                for attempt in range(2):
+                    try:
+                        resp = await request.app.state.http.get(work_url, params={"mailto": CROSSREF_EMAIL})
+                        if resp.status_code == 200:
+                            msg = resp.json().get('message', {})
+                            if msg:
+                                item = msg
+                                base = float(msg.get('score', 60.0)) if isinstance(msg.get('score'), (int, float)) else 60.0
+                                doi_ok = True
+                            break
+                        elif resp.status_code in (429, 500, 502, 503, 504):
+                            await sleep_with_backoff(attempt)
+                            continue
+                        else:
+                            break
+                    except httpx.TimeoutException:
+                        await sleep_with_backoff(attempt)
+
+            if item is None:
+                data = await crossref_query(request.app.state.http, clean_ref, rows=3)
+                if data and data.get('message', {}).get('items'):
+                    guess = re.match(r'^[^.]+', clean_ref)
+                    guessed_title = guess.group(0) if guess else clean_ref
+                    best = None
+                    best_total = -1.0
+                    best_base = 0.0
+                    best_sim = 0.0
+                    for cand in data['message']['items']:
+                        cand_base = float(cand.get('score', 0.0))
+                        cand_title = cand.get('title', [''])[0]
+                        sim = title_similarity(guessed_title, cand_title)
+                        total = cand_base + 40.0 * sim
+                        if total > best_total:
+                            best_total = total
+                            best = cand
+                            best_base = cand_base
+                            best_sim = sim
+                    if best is not None:
+                        item = best
+                        base = best_base
+                        title_sim_val = best_sim
+
+            if item is not None:
+                # Boosts
+                boost = 0
+                year_ok = False
+                authors_ok = False
                 if year_match:
-                    item_year = get_year_from_item(item)
+                    item_year = first_year(item)
                     if item_year and item_year == year_match.group(0):
-                        confidence_boost += 10
-                        explanation_parts.append("year match")
-                
-                # Check authors
+                        boost += 10
+                        year_ok = True
                 if author_matches and item.get('author'):
-                    crossref_authors = {a.get('family', '').lower() for a in item['author']}
+                    crossref_authors = {a.get('family', '').lower() for a in item['author'] if a.get('family')}
                     ref_authors = {a.lower() for a in author_matches}
                     if crossref_authors & ref_authors:
-                        confidence_boost += 10
-                        explanation_parts.append("author match")
-                
-                # Check DOI
-                doi_in_ref = re.search(r'10\.\d{4,}/[-._;()/:\w]+', reference)
-                if doi_in_ref and item.get('DOI'):
-                    if doi_in_ref.group(0).lower() == item['DOI'].lower():
-                        confidence_boost += 30
-                        explanation_parts.append("DOI match")
-                
-                adjusted_score = min(score + confidence_boost, 100)
-                
-                explanation = f"Crossref score: {score:.0f}"
-                if explanation_parts:
-                    explanation += f" (boosted: {', '.join(explanation_parts)})"
-                
-                if adjusted_score > 70:
-                    result = Citation(
-                        raw_text=reference[:100],
-                        normalized=item.get('title', ['Unknown'])[0][:100],
-                        status="verified",
-                        confidence=adjusted_score / 100,
-                        doi=item.get('DOI'),
-                        title=item.get('title', [''])[0],
-                        authors=[a.get('family', '') for a in item.get('author', [])[:3]],
-                        explanation=explanation
-                    )
-                elif adjusted_score > 40:
-                    result = Citation(
-                        raw_text=reference[:100],
-                        normalized=clean_ref[:100],
-                        status="suspicious",
-                        confidence=adjusted_score / 100,
-                        doi=item.get('DOI') if adjusted_score > 50 else None,
-                        title=item.get('title', [''])[0] if adjusted_score > 50 else None,
-                        authors=None,
-                        explanation=f"Low confidence: {explanation}"
-                    )
-                else:
-                    result = Citation(
-                        raw_text=reference[:100],
-                        normalized=clean_ref[:100],
-                        status="not_found",
-                        confidence=0.0,
-                        doi=None,
-                        title=None,
-                        authors=None,
-                        explanation="No reliable match found"
-                    )
+                        boost += 10
+                        authors_ok = True
+                if doi_in_ref and item.get('DOI') and doi_in_ref.group(0).lower() == item['DOI'].lower():
+                    boost += 30
+                    doi_ok = True
+
+                # Compute confidence and status
+                confidence = max(0.0, min(100.0, base + 40.0 * title_sim_val + boost))
+                status = 'verified' if confidence >= 75.0 else 'suspicious' if confidence >= 45.0 else 'not_found'
+
+                # Explanation
+                explanation = (
+                    f"base:{base:.0f} title_sim:{title_sim_val:.2f} "
+                    f"year:{'✓' if year_ok else '—'} authors:{'✓' if authors_ok else '—'} doi:{'✓' if doi_ok else '—'}"
+                )
+
+                result = Citation(
+                    raw_text=reference[:200],
+                    normalized=(item.get('title', ['Unknown'])[0][:200] if item.get('title') else clean_ref[:200]),
+                    status=status,
+                    confidence=confidence / 100.0,
+                    doi=item.get('DOI'),
+                    title=item.get('title', [''])[0] if item.get('title') else None,
+                    authors=[a.get('family', '') for a in item.get('author', [])[:5]] if item.get('author') else None,
+                    explanation=explanation
+                )
             else:
                 result = Citation(
-                    raw_text=reference[:100],
-                    normalized=clean_ref[:100],
+                    raw_text=reference[:200],
+                    normalized=clean_ref[:200],
                     status="not_found",
                     confidence=0.0,
                     doi=None,
                     title=None,
                     authors=None,
-                    explanation="Could not verify with Crossref"
+                    explanation="base:0 title_sim:0.00 year:— authors:— doi:—"
                 )
             
             reference_cache[cache_key] = result
@@ -576,70 +602,94 @@ async def find_intext_citations(body: TextBody):
 
 @app.post("/api/extract_statistics", response_model=StatisticsResult)
 async def extract_statistics(body: TextBody):
-    """Extract and analyze statistical claims"""
+    """Extract and analyze statistical claims with domain-aware thresholds and richer entities."""
     
     text = body.text
+    # Detect optional [field:xyz]
+    field_match = re.search(r'\[\s*field\s*:\s*(general|psychology|biology|clinical|cs)\s*\]', text, re.IGNORECASE)
+    field = field_match.group(1).lower() if field_match else 'general'
+    thresholds = { 'general': 30, 'psychology': 30, 'biology': 20, 'clinical': 50, 'cs': 15 }
+    small_n_cutoff = thresholds.get(field, 30)
     
-    # Normalize whitespace for better matching
+    # Normalize whitespace
     normalized = re.sub(r'\s+', ' ', text)
     
-    # Extract statistics with better patterns
+    # Extract p-values
     p_values = re.findall(r'[pP]\s*[=<>≤≥]\s*0?\.\d+', normalized)
-    p_values.extend(re.findall(r'[pP]\s*<\s*\.0\d+', normalized))  # p<.001 format
-    p_values = p_values[:30]
+    p_values.extend(re.findall(r'[pP]\s*<\s*\.0\d+', normalized))
+    p_values = p_values[:50]
     
-    sample_sizes = re.findall(r'[nN]\s*=\s*\d+', normalized)[:30]
+    # Sample sizes
+    sample_sizes = re.findall(r'[nN]\s*=\s*\d+', normalized)[:50]
     
+    # Effect sizes and common stats
     effect_sizes = []
     effect_sizes.extend(re.findall(r"Cohen's\s*d\s*=\s*-?\d*\.\d+", normalized))
     effect_sizes.extend(re.findall(r'\br\s*=\s*-?\d*\.\d+', normalized))
     effect_sizes.extend(re.findall(r'η²\s*=\s*\d*\.\d+', normalized))
-    effect_sizes = effect_sizes[:15]
+    effect_sizes.extend(re.findall(r'\bOR\s*=\s*-?\d*\.?\d+', normalized))
+    effect_sizes.extend(re.findall(r'\bRR\s*=\s*-?\d*\.?\d+', normalized))
+    effect_sizes.extend(re.findall(r'[βΒβ]\s*=\s*-?\d*\.?\d+', normalized))
+    # Test statistics
+    effect_sizes.extend(re.findall(r'\bt\s*\(\s*\d+\s*\)\s*=\s*-?\d*\.?\d+', normalized))
+    effect_sizes.extend(re.findall(r'\bF\s*\(\s*\d+\s*,\s*\d+\s*\)\s*=\s*\d*\.?\d+', normalized))
+    effect_sizes.extend(re.findall(r'[χχX]\s*\^?2\s*\(\s*\d+\s*\)\s*=\s*\d*\.?\d+', normalized))
+    effect_sizes = effect_sizes[:50]
     
+    # Confidence intervals
+    cis = re.findall(r'CI\s*\[\s*-?\d*\.?\d+\s*,\s*-?\d*\.?\d+\s*\]', normalized)[:50]
+    
+    # Flags
     red_flags = []
+    # p ~ .05 soft rule
+    near = []
+    for p in p_values:
+        try:
+            m = re.search(r'0?\.(\d+)', p)
+            if m:
+                val = float('0.' + m.group(1))
+                if 0.045 <= val <= 0.054:
+                    near.append(p)
+        except Exception:
+            pass
+    if len(near) >= 3:
+        red_flags.append(f"🚩 {len(near)} p-values near 0.05 (0.045–0.054)")
+    elif len(near) == 2:
+        red_flags.append("⚠️ Two p-values near 0.05")
     
-    p_vals_near_05 = [p for p in p_values if any(x in p for x in ['0.04', '0.05', '0.06'])]
-    if len(p_vals_near_05) > 3:
-        red_flags.append(f"🚩 {len(p_vals_near_05)} p-values suspiciously close to 0.05")
-    
+    # Small n
     small_samples = []
-    for size_str in sample_sizes[:10]:
-        match = re.findall(r'\d+', size_str)
-        if match:
-            n = int(match[0])
-            if n < 30:
-                small_samples.append(size_str)
-    
+    for size_str in sample_sizes[:20]:
+        nums = re.findall(r'\d+', size_str)
+        if nums and int(nums[0]) < small_n_cutoff:
+            small_samples.append(size_str)
     if small_samples:
-        red_flags.append(f"⚠️ Small sample sizes: {', '.join(small_samples[:3])}")
+        red_flags.append(f"⚠️ Small sample sizes (<{small_n_cutoff}): {', '.join(small_samples[:3])}")
     
     if not re.search(r'\blimitation', text, re.IGNORECASE):
         red_flags.append("❌ No limitations section found")
-    
     if not re.search(r'conflict.*interest|disclosure', text, re.IGNORECASE):
         red_flags.append("❌ No conflict of interest statement")
-    
     if not re.search(r'ethic.*approv|IRB|institutional.*review', text, re.IGNORECASE):
         red_flags.append("⚠️ No ethics approval mentioned")
-    
     if re.search(r'pre-?register', text, re.IGNORECASE):
         red_flags.append("✅ Study was pre-registered")
-    
     if re.search(r'power\s+analysis', text, re.IGNORECASE):
         red_flags.append("✅ Power analysis conducted")
-    
     if re.search(r'data.*available|github\.com|osf\.io|figshare', text, re.IGNORECASE):
         red_flags.append("✅ Data/code availability statement")
-    
     if re.search(r'replicat', text, re.IGNORECASE):
         red_flags.append("✅ Discusses replication")
     
-    summary = f"Found {len(p_values)} p-values, {len(sample_sizes)} sample sizes, {len(effect_sizes)} effect sizes"
+    summary = (
+        f"Found {len(p_values)} p-values, {len(sample_sizes)} sample sizes, {len(effect_sizes)} effects/test stats, {len(cis)} CIs"
+    )
     
     return StatisticsResult(
         p_values=p_values,
         sample_sizes=sample_sizes,
         effect_sizes=effect_sizes,
+        cis=cis,
         red_flags=red_flags,
         summary=summary
     )

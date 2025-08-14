@@ -1,31 +1,42 @@
-# File generated from our OpenAPI spec by Stainless.
+# File generated from our OpenAPI spec by Stainless. See CONTRIBUTING.md for details.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Union
+from typing import Union
 from typing_extensions import Literal
 
 import httpx
 
+from ... import _legacy_response
 from ..._types import NOT_GIVEN, Body, Query, Headers, NotGiven
-from ..._utils import maybe_transform
+from ..._utils import (
+    maybe_transform,
+    async_maybe_transform,
+)
+from ..._compat import cached_property
 from ..._resource import SyncAPIResource, AsyncAPIResource
-from ..._response import to_raw_response_wrapper, async_to_raw_response_wrapper
+from ..._response import (
+    StreamedBinaryAPIResponse,
+    AsyncStreamedBinaryAPIResponse,
+    to_custom_streamed_response_wrapper,
+    async_to_custom_streamed_response_wrapper,
+)
 from ...types.audio import speech_create_params
-from ..._base_client import HttpxBinaryResponseContent, make_request_options
-
-if TYPE_CHECKING:
-    from ..._client import OpenAI, AsyncOpenAI
+from ..._base_client import (
+    make_request_options,
+)
 
 __all__ = ["Speech", "AsyncSpeech"]
 
 
 class Speech(SyncAPIResource):
-    with_raw_response: SpeechWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> SpeechWithRawResponse:
+        return SpeechWithRawResponse(self)
 
-    def __init__(self, client: OpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = SpeechWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> SpeechWithStreamingResponse:
+        return SpeechWithStreamingResponse(self)
 
     def create(
         self,
@@ -33,7 +44,7 @@ class Speech(SyncAPIResource):
         input: str,
         model: Union[str, Literal["tts-1", "tts-1-hd"]],
         voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
-        response_format: Literal["mp3", "opus", "aac", "flac"] | NotGiven = NOT_GIVEN,
+        response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | NotGiven = NOT_GIVEN,
         speed: float | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -41,7 +52,7 @@ class Speech(SyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> HttpxBinaryResponseContent:
+    ) -> _legacy_response.HttpxBinaryResponseContent:
         """
         Generates audio from the input text.
 
@@ -53,9 +64,12 @@ class Speech(SyncAPIResource):
               `tts-1` or `tts-1-hd`
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`,
-              `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
+              `echo`, `fable`, `onyx`, `nova`, and `shimmer`. Previews of the voices are
+              available in the
+              [Text to speech guide](https://platform.openai.com/docs/guides/text-to-speech/voice-options).
 
-          response_format: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
+          response_format: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, `flac`,
+              `wav`, and `pcm`.
 
           speed: The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is
               the default.
@@ -68,6 +82,7 @@ class Speech(SyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
+        extra_headers = {"Accept": "application/octet-stream", **(extra_headers or {})}
         return self._post(
             "/audio/speech",
             body=maybe_transform(
@@ -83,16 +98,18 @@ class Speech(SyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=HttpxBinaryResponseContent,
+            cast_to=_legacy_response.HttpxBinaryResponseContent,
         )
 
 
 class AsyncSpeech(AsyncAPIResource):
-    with_raw_response: AsyncSpeechWithRawResponse
+    @cached_property
+    def with_raw_response(self) -> AsyncSpeechWithRawResponse:
+        return AsyncSpeechWithRawResponse(self)
 
-    def __init__(self, client: AsyncOpenAI) -> None:
-        super().__init__(client)
-        self.with_raw_response = AsyncSpeechWithRawResponse(self)
+    @cached_property
+    def with_streaming_response(self) -> AsyncSpeechWithStreamingResponse:
+        return AsyncSpeechWithStreamingResponse(self)
 
     async def create(
         self,
@@ -100,7 +117,7 @@ class AsyncSpeech(AsyncAPIResource):
         input: str,
         model: Union[str, Literal["tts-1", "tts-1-hd"]],
         voice: Literal["alloy", "echo", "fable", "onyx", "nova", "shimmer"],
-        response_format: Literal["mp3", "opus", "aac", "flac"] | NotGiven = NOT_GIVEN,
+        response_format: Literal["mp3", "opus", "aac", "flac", "wav", "pcm"] | NotGiven = NOT_GIVEN,
         speed: float | NotGiven = NOT_GIVEN,
         # Use the following arguments if you need to pass additional parameters to the API that aren't available via kwargs.
         # The extra values given here take precedence over values defined on the client or passed to this method.
@@ -108,7 +125,7 @@ class AsyncSpeech(AsyncAPIResource):
         extra_query: Query | None = None,
         extra_body: Body | None = None,
         timeout: float | httpx.Timeout | None | NotGiven = NOT_GIVEN,
-    ) -> HttpxBinaryResponseContent:
+    ) -> _legacy_response.HttpxBinaryResponseContent:
         """
         Generates audio from the input text.
 
@@ -120,9 +137,12 @@ class AsyncSpeech(AsyncAPIResource):
               `tts-1` or `tts-1-hd`
 
           voice: The voice to use when generating the audio. Supported voices are `alloy`,
-              `echo`, `fable`, `onyx`, `nova`, and `shimmer`.
+              `echo`, `fable`, `onyx`, `nova`, and `shimmer`. Previews of the voices are
+              available in the
+              [Text to speech guide](https://platform.openai.com/docs/guides/text-to-speech/voice-options).
 
-          response_format: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, and `flac`.
+          response_format: The format to audio in. Supported formats are `mp3`, `opus`, `aac`, `flac`,
+              `wav`, and `pcm`.
 
           speed: The speed of the generated audio. Select a value from `0.25` to `4.0`. `1.0` is
               the default.
@@ -135,9 +155,10 @@ class AsyncSpeech(AsyncAPIResource):
 
           timeout: Override the client-level default timeout for this request, in seconds
         """
+        extra_headers = {"Accept": "application/octet-stream", **(extra_headers or {})}
         return await self._post(
             "/audio/speech",
-            body=maybe_transform(
+            body=await async_maybe_transform(
                 {
                     "input": input,
                     "model": model,
@@ -150,19 +171,43 @@ class AsyncSpeech(AsyncAPIResource):
             options=make_request_options(
                 extra_headers=extra_headers, extra_query=extra_query, extra_body=extra_body, timeout=timeout
             ),
-            cast_to=HttpxBinaryResponseContent,
+            cast_to=_legacy_response.HttpxBinaryResponseContent,
         )
 
 
 class SpeechWithRawResponse:
     def __init__(self, speech: Speech) -> None:
-        self.create = to_raw_response_wrapper(
+        self._speech = speech
+
+        self.create = _legacy_response.to_raw_response_wrapper(
             speech.create,
         )
 
 
 class AsyncSpeechWithRawResponse:
     def __init__(self, speech: AsyncSpeech) -> None:
-        self.create = async_to_raw_response_wrapper(
+        self._speech = speech
+
+        self.create = _legacy_response.async_to_raw_response_wrapper(
             speech.create,
+        )
+
+
+class SpeechWithStreamingResponse:
+    def __init__(self, speech: Speech) -> None:
+        self._speech = speech
+
+        self.create = to_custom_streamed_response_wrapper(
+            speech.create,
+            StreamedBinaryAPIResponse,
+        )
+
+
+class AsyncSpeechWithStreamingResponse:
+    def __init__(self, speech: AsyncSpeech) -> None:
+        self._speech = speech
+
+        self.create = async_to_custom_streamed_response_wrapper(
+            speech.create,
+            AsyncStreamedBinaryAPIResponse,
         )
