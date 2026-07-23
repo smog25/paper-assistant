@@ -109,6 +109,21 @@ button:focus-visible {
     --sidebar-accent-foreground: 240 5.9% 10%;
     --sidebar-border: 220 13% 91%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AIRA semantic tokens (A0) — single source for meaning-bearing color.
+       Status = citation verification state; grade = integrity letter grade.
+       Every value pair must hold AA contrast on its -surface/background. */
+    --status-verified: 152 55% 30%;
+    --status-verified-surface: 150 55% 95%;
+    --status-suspicious: 35 90% 30%;
+    --status-suspicious-surface: 45 90% 94%;
+    --status-notfound: 0 65% 42%;
+    --status-notfound-surface: 0 80% 96%;
+    --grade-a: 152 55% 32%;
+    --grade-b: 217 80% 42%;
+    --grade-c: 35 90% 34%;
+    --grade-d: 22 85% 40%;
+    --grade-f: 0 65% 44%;
   }
   .dark {
     --background: 0 0% 3.9%;
@@ -143,6 +158,19 @@ button:focus-visible {
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* AIRA semantic tokens (A0) — dark counterparts. */
+    --status-verified: 152 45% 55%;
+    --status-verified-surface: 152 40% 12%;
+    --status-suspicious: 42 85% 58%;
+    --status-suspicious-surface: 40 60% 12%;
+    --status-notfound: 0 70% 62%;
+    --status-notfound-surface: 0 45% 14%;
+    --grade-a: 152 45% 55%;
+    --grade-b: 217 80% 65%;
+    --grade-c: 42 85% 58%;
+    --grade-d: 24 85% 60%;
+    --grade-f: 0 70% 62%;
   }
 }
 

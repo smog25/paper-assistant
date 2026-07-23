@@ -59,6 +59,28 @@ module.exports = {
   				'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
   				border: 'hsl(var(--sidebar-border))',
   				ring: 'hsl(var(--sidebar-ring))'
+  			},
+  			// AIRA semantic tokens (A0) — see frontend/DESIGN.md
+  			status: {
+  				verified: {
+  					DEFAULT: 'hsl(var(--status-verified))',
+  					surface: 'hsl(var(--status-verified-surface))'
+  				},
+  				suspicious: {
+  					DEFAULT: 'hsl(var(--status-suspicious))',
+  					surface: 'hsl(var(--status-suspicious-surface))'
+  				},
+  				notfound: {
+  					DEFAULT: 'hsl(var(--status-notfound))',
+  					surface: 'hsl(var(--status-notfound-surface))'
+  				}
+  			},
+  			grade: {
+  				a: 'hsl(var(--grade-a))',
+  				b: 'hsl(var(--grade-b))',
+  				c: 'hsl(var(--grade-c))',
+  				d: 'hsl(var(--grade-d))',
+  				f: 'hsl(var(--grade-f))'
   			}
   		},
   		keyframes: {
