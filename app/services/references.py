@@ -55,6 +55,9 @@ async def crossref_query(
 
 
 def _title_sims(guessed_title: str, cand_titles: List[str]) -> List[float]:
+    # SPECTER encode is CPU-bound and synchronous — callers on the async path
+    # must invoke this via asyncio.to_thread so it can't stall the event loop.
+    # Concurrency is naturally bounded by CROSSREF_SEMAPHORE at the call sites.
     if USE_SEMANTIC:
         model = get_specter_model()
         vecs = model.encode([guessed_title] + cand_titles, normalize_embeddings=True)
@@ -98,7 +101,9 @@ async def _verify_one(http: httpx.AsyncClient, reference: str) -> Citation:
                             item_title = msg.get("title", [""])[0] if msg.get("title") else ""
                             guessed_title = extract_title_from_ref(clean_ref)
                             if item_title and guessed_title:
-                                title_sim_val = _title_sims(guessed_title, [item_title])[0]
+                                title_sim_val = (
+                                    await asyncio.to_thread(_title_sims, guessed_title, [item_title])
+                                )[0]
                             doi_ok = True
                         break
                     elif resp.status_code in (429, 500, 502, 503, 504):
@@ -115,7 +120,7 @@ async def _verify_one(http: httpx.AsyncClient, reference: str) -> Citation:
                 guessed_title = extract_title_from_ref(clean_ref)
                 candidates = data["message"]["items"]
                 cand_titles = [c.get("title", [""])[0] if c.get("title") else "" for c in candidates]
-                sims = _title_sims(guessed_title, cand_titles)
+                sims = await asyncio.to_thread(_title_sims, guessed_title, cand_titles)
 
                 best = None
                 best_total = -1.0

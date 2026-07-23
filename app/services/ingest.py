@@ -194,7 +194,7 @@ async def ingest_paper(
             confidence=cite.confidence,
         ))
 
-    _try_store_embedding(db, paper.id, full_text)
+    await _try_store_embedding(db, paper.id, full_text)
 
     db.commit()
     db.refresh(paper)
@@ -207,14 +207,16 @@ async def ingest_paper(
     )
 
 
-def _try_store_embedding(db: Session, paper_id: int, full_text: str) -> None:
+async def _try_store_embedding(db: Session, paper_id: int, full_text: str) -> None:
     if not USE_SEMANTIC:
         return
     try:
         from app.services.embeddings import get_specter_model
         model = get_specter_model()
         embed_text = full_text[:1000]
-        vec = model.encode([embed_text], normalize_embeddings=True)[0]
+        # encode() is CPU-bound; off the event loop. The Session is not
+        # thread-safe, so only the encode crosses the thread boundary.
+        vec = (await asyncio.to_thread(model.encode, [embed_text], normalize_embeddings=True))[0]
         db.add(Embedding(
             paper_id=paper_id,
             kind="title_abstract",
