@@ -1,0 +1,416 @@
+alembic==1.18.5
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+altair==5.5.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+annotated-doc==0.0.4
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   fastapi
+    #   typer
+annotated-types==0.7.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pydantic
+anyio==4.14.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   httpx
+    #   openai
+    #   starlette
+    #   watchfiles
+attrs==26.1.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   jsonschema
+    #   referencing
+blinker==1.9.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+cachetools==5.3.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   streamlit
+certifi==2026.6.17
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   httpcore
+    #   httpx
+    #   requests
+charset-normalizer==3.4.8
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   requests
+click==8.4.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+    #   streamlit
+    #   uvicorn
+distro==1.9.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   openai
+fastapi==0.128.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+filelock==3.29.6
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+    #   torch
+fsspec==2026.6.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+    #   torch
+gitdb==4.0.12
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   gitpython
+gitpython==3.1.50
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+h11==0.16.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   httpcore
+    #   uvicorn
+hf-xet==1.5.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+httpcore==1.0.9
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   httpx
+httptools==0.8.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   uvicorn
+httpx==0.27.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   huggingface-hub
+    #   openai
+huggingface-hub==1.22.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   sentence-transformers
+    #   tokenizers
+    #   transformers
+idna==3.18
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   anyio
+    #   httpx
+    #   requests
+jinja2==3.1.6
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   altair
+    #   pydeck
+    #   torch
+joblib==1.5.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   scikit-learn
+jsonschema==4.26.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   altair
+jsonschema-specifications==2025.9.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   jsonschema
+mako==1.3.12
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   alembic
+markdown-it-py==4.2.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   rich
+markupsafe==3.0.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   jinja2
+    #   mako
+mdurl==0.1.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   markdown-it-py
+mpmath==1.3.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   sympy
+narwhals==2.23.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   altair
+    #   scikit-learn
+networkx==3.6.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   torch
+numpy==1.26.4
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pandas
+    #   pydeck
+    #   scikit-learn
+    #   scipy
+    #   sentence-transformers
+    #   streamlit
+    #   transformers
+openai==1.35.7
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+packaging==24.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   altair
+    #   huggingface-hub
+    #   pytesseract
+    #   streamlit
+    #   transformers
+pandas==2.2.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   streamlit
+pdf2image==1.17.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+pillow==10.3.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   pdf2image
+    #   pytesseract
+    #   streamlit
+protobuf==4.25.9
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+pyarrow==24.0.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+pydantic==2.7.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   fastapi
+    #   openai
+pydantic-core==2.18.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pydantic
+pydeck==0.9.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+pygments==2.20.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   rich
+pypdf==6.6.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+pytesseract==0.3.10
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+python-dateutil==2.9.0.post0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pandas
+python-dotenv==1.0.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   uvicorn
+python-multipart==0.0.18
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+pytz==2026.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pandas
+pyyaml==6.0.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+    #   transformers
+    #   uvicorn
+referencing==0.37.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   jsonschema
+    #   jsonschema-specifications
+regex==2026.6.28
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   transformers
+requests==2.34.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+rich==13.9.4
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+    #   typer
+rpds-py==2026.6.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   jsonschema
+    #   referencing
+safetensors==0.8.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   transformers
+scikit-learn==1.9.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   sentence-transformers
+scipy==1.17.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   scikit-learn
+    #   sentence-transformers
+sentence-transformers==5.6.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+shellingham==1.5.4
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   typer
+six==1.17.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   python-dateutil
+smmap==5.0.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   gitdb
+sniffio==1.3.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   httpx
+    #   openai
+sqlalchemy==2.0.51
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   alembic
+starlette==0.50.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   fastapi
+streamlit==1.35.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+sympy==1.14.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   torch
+tenacity==8.5.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+threadpoolctl==3.6.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   scikit-learn
+tokenizers==0.22.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   transformers
+toml==0.10.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+torch==2.12.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   sentence-transformers
+tornado==6.5.7
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   streamlit
+tqdm==4.68.3
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   huggingface-hub
+    #   openai
+    #   sentence-transformers
+    #   transformers
+transformers==5.13.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   sentence-transformers
+typer==0.26.8
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   transformers
+typing-extensions==4.16.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   alembic
+    #   altair
+    #   anyio
+    #   fastapi
+    #   huggingface-hub
+    #   openai
+    #   pydantic
+    #   pydantic-core
+    #   referencing
+    #   sentence-transformers
+    #   sqlalchemy
+    #   starlette
+    #   streamlit
+    #   torch
+tzdata==2026.2
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   pandas
+urllib3==2.7.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   requests
+uvicorn==0.29.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+uvloop==0.22.1
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   uvicorn
+watchfiles==0.21.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
+    #   uvicorn
+websockets==16.0
+    # via
+    #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
+    #   uvicorn
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

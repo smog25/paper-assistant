@@ -41,7 +41,15 @@ sudo apt-get install tesseract-ocr poppler-utils
 ```bash
 python3.11 -m venv .venv --clear
 source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r requirements.lock.txt        # reproducible pinned install
+# (or `pip install -r requirements.txt` for a loose latest-compatible install)
+```
+
+Lockfiles (`requirements.lock.txt`, `requirements-dev.lock.txt`) are compiled with pip-tools and are what CI installs. After editing `requirements*.txt`, regenerate:
+
+```bash
+pip-compile --strip-extras --no-header -o requirements.lock.txt requirements.txt
+pip-compile --strip-extras --no-header -o requirements-dev.lock.txt requirements.txt requirements-dev.txt
 ```
 
 ### Backend
