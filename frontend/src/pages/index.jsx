@@ -4,6 +4,8 @@ import Home from "./Home";
 import Library from "./Library";
 import ProjectDetail from "./ProjectDetail";
 import PaperDetail from "./PaperDetail";
+import Styleguide from "./dev/Styleguide";
+import PaperDetailMock from "./dev/PaperDetailMock";
 
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
@@ -32,6 +34,17 @@ function _getCurrentPage(url) {
 function PagesContent() {
     const location = useLocation();
     const currentPage = _getCurrentPage(location.pathname);
+
+    // A0 dev routes render standalone: the old Layout shell is what A1
+    // replaces, and wrapping new-token screens in it would muddy review.
+    if (location.pathname.startsWith('/styleguide')) {
+        return (
+            <Routes>
+                <Route path="/styleguide" element={<Styleguide />} />
+                <Route path="/styleguide/paper" element={<PaperDetailMock />} />
+            </Routes>
+        );
+    }
 
     return (
         <Layout currentPageName={currentPage}>
