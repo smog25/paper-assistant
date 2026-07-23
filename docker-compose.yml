@@ -1,0 +1,16 @@
+services:
+  backend:
+    build: .
+    ports:
+      - "8000:8000"
+    # .env supplies CROSSREF_EMAIL etc.; DATABASE_URL stays at its default
+    # (sqlite:///./data/aira.db), which lands inside the bind mount below.
+    env_file: .env
+    volumes:
+      # One mount for everything persistent: SQLite DB, stored PDFs, and the
+      # HF model cache (HF_HOME=/app/data/hf-cache). First start downloads
+      # the SPECTER model (~500 MB) into it; later starts are warm.
+      - ./data:/app/data
+
+# The React frontend is not containerized (dev flow stays `npm run dev` on
+# the host, port 5173, which the backend's default ALLOWED_ORIGINS permits).

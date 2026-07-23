@@ -82,6 +82,15 @@ pip install -r requirements-dev.txt
 pytest tests/ -v
 ```
 
+### Docker (backend only)
+
+```bash
+docker compose up --build
+# First start downloads the SPECTER model (~500 MB) into ./data/hf-cache;
+# DB, PDFs, and model cache all persist via the single ./data bind mount.
+# Build is CPU-torch pinned to the lockfile version (see Dockerfile note).
+```
+
 ## Environment Variables
 
 Copy `.env.example` to `.env`:
@@ -145,6 +154,7 @@ Base URL: `http://localhost:8000`
 - **`extract_title_from_ref()` fix** (`app/utils/helpers.py`) — old regex captured the author list (everything before the first period) instead of the paper title. New function handles APA-style `(YEAR). Title.` and Vancouver-style `Author. Title. Journal.` patterns.
 - **SPECTER semantic embeddings** for citation matching — `app/services/embeddings.py`; replaced `difflib.SequenceMatcher` in `verify_references()` with `allenai-specter` (sentence-transformers). Encodes all Crossref candidates for a reference in a single batched forward pass. Controllable via `USE_SEMANTIC_MATCHING` env var (default `1`). Old `title_similarity()` kept as fallback. Model loads at startup via lifespan hook.
 - **Week 1 Foundation** — package restructure into `app/`; SQLAlchemy 6-table schema + Alembic initial migration; `POST /api/papers` ingest pipeline (SHA256 dedup, PDF storage, Paper/Report/Reference/Embedding persistence; 768-dim SPECTER vector confirmed in DB); projects CRUD (7 endpoints). 50 tests green.
+- **Pre-gate hardening (2026-07-22, VISION.md §3 shortlist)** — CORS defaults to explicit local origins (wildcard now disables credentials); pip-tools lockfiles pinned to the tested venv + dependabot (pip/npm/actions) + CI installs from lock; backend Dockerfile + compose (CPU torch, Alembic migrate on start, single `./data` mount — **not build-verified: no Docker on the dev machine**).
 - **SPECTER encode moved off the event loop** — `model.encode()` calls in `app/services/ingest.py` (`_try_store_embedding`, now async) and `app/services/references.py` (`_title_sims` call sites) run via `asyncio.to_thread`; the DB session never crosses the thread boundary. Concurrency stays bounded by `CROSSREF_SEMAPHORE` on the verification path.
 - **Week 2 Library UI + discovery backend** — paper read endpoints (`GET /api/papers` list with pagination envelope + latest-report join, `GET /api/papers/{id}` detail with parsed stored report); ingest metadata enrichment (title + DOI, see backlog note); `/similar` (cosine over stored SPECTER vectors) and `/related` (OpenAlex, cached, semaphore + retry mirroring the Crossref client); React Query frontend with `/library`, `/projects/:id`, `/papers/:id` reusing the dashboard components via the extracted `reportTransform.js`; **upload flow now ingests** (`POST /api/papers`) instead of the stateless `/api/analyze_pdf`, so analyzed papers persist to the library. Also fixed en route: the reference-verification DOI regex was broken (never matched — DOI branch was dead code) and the resurrected fast path is now guarded by title agreement. 88 tests green.
 
