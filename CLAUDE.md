@@ -89,7 +89,7 @@ Copy `.env.example` to `.env`:
 | `OPENALEX_MAILTO` | No | `CROSSREF_EMAIL` | Contact email for OpenAlex polite pool |
 | `OPENALEX_CONCURRENT_REQUESTS` | No | `3` | Semaphore limit for concurrent OpenAlex calls |
 | `POPPLER_PATH` | No | — | Windows only: path to poppler `bin/` directory |
-| `ALLOWED_ORIGINS` | No | `*` | Comma-separated CORS origins |
+| `ALLOWED_ORIGINS` | No | localhost 5173/3000/8501 | Comma-separated CORS origins; `*` allowed but disables credentials (browsers reject wildcard+credentials) |
 | `USE_SEMANTIC_MATCHING` | No | `1` | Set to `0` to fall back to difflib `title_similarity()` for citation scoring |
 
 ## API Endpoints

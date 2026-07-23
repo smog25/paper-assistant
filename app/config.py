@@ -14,7 +14,17 @@ CROSSREF_CONCURRENT = int(os.getenv("CROSSREF_CONCURRENT_REQUESTS", 3))
 OPENALEX_MAILTO = os.getenv("OPENALEX_MAILTO", CROSSREF_EMAIL)
 OPENALEX_CONCURRENT = int(os.getenv("OPENALEX_CONCURRENT_REQUESTS", 3))
 POPPLER_PATH = os.getenv("POPPLER_PATH")
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "*").split(",")
+# Default to the known local frontends (React dev, alt dev port, Streamlit)
+# rather than "*": a wildcard also forces credentials off in main.py, since
+# browsers reject Access-Control-Allow-Origin:* on credentialed responses.
+ALLOWED_ORIGINS = [
+    o.strip()
+    for o in os.getenv(
+        "ALLOWED_ORIGINS",
+        "http://localhost:5173,http://localhost:3000,http://localhost:8501",
+    ).split(",")
+    if o.strip()
+]
 USE_SEMANTIC = os.getenv("USE_SEMANTIC_MATCHING", "1") == "1"
 
 ANALYZER_VERSION = "1.0.0"

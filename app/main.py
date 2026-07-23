@@ -32,7 +32,10 @@ app = FastAPI(title="Research Assistant API", version="1.0.0", lifespan=lifespan
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=True,
+    # A wildcard origin cannot be combined with credentials — browsers
+    # reject that response. Wildcard therefore means "public cookie-less
+    # API"; explicit origins get credentials for future authed requests.
+    allow_credentials="*" not in ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
