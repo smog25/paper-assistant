@@ -83,7 +83,7 @@ h11==0.16.0
     #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
     #   httpcore
     #   uvicorn
-hf-xet==1.5.1
+hf-xet==1.5.2
     # via
     #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
     #   huggingface-hub
