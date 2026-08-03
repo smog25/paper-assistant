@@ -30,9 +30,9 @@ Honest baseline after Weeks 1–2 of the original roadmap:
   (SQLite + Alembic), projects, SPECTER similarity, OpenAlex related works, React
   library UI. 88 tests green, CI on GitHub Actions.
 - **Single-user by construction**: no auth anywhere; no `user_id` on any of the 6
-  tables; all data in one global namespace; CORS defaults to `*` **with**
-  `allow_credentials=True` (`app/main.py:32-38`) — a combination browsers reject once
-  credentialed auth exists; PDFs on local disk at `data/pdfs/{sha256}.pdf` with global
+  tables; all data in one global namespace; CORS defaults to explicit local origins, with
+  `allow_credentials` gated so a wildcard origin can never combine with credentials
+  (`app/main.py:32-41`); PDFs on local disk at `data/pdfs/{sha256}.pdf` with global
   byte-dedup and no ownership concept (deletes orphan blobs).
 - **Local-scale engineering**: SQLite with JSON-as-text columns and LargeBinary numpy
   vectors; SPECTER (~2 GB RAM) loaded in-process, `model.encode()` called synchronously
