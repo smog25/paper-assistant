@@ -293,4 +293,4 @@ committed roadmap.**
 
 ## License
 
-[MIT](LICENSE) © 2026 Sameer Mogallur
+[AGPL-3.0](LICENSE) © 2026 Sameer Mogallur
