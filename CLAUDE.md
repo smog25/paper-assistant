@@ -17,6 +17,7 @@ User → Streamlit app_v2.py     port 8501 ──┤──▶ FastAPI app/ packa
 
 | File | Role |
 |------|------|
+| `README.md` | Public-facing project README (description, features, architecture, setup, API reference, testing, design decisions, limitations) — the front door for external readers |
 | `backend.py` | 3-line shim — `from app.main import app`; entry point for uvicorn and CI |
 | `app/` | FastAPI package — `main.py` (lifespan + CORS), `config.py` (env vars + constants), `routers/` (health, pdf, analysis, papers, projects), `services/` (pdf, references, citations, statistics, integrity, embeddings, ingest), `schemas/models.py`, `utils/helpers.py`, `db/` (engine + 6 ORM models) |
 | `app/db/models.py` | SQLAlchemy ORM: Paper, AnalysisReport, Reference, Project, ProjectPaper, Embedding |
