@@ -43,8 +43,8 @@ Everything below is implemented and running today:
 - **React + Vite frontend** (`frontend/`) — the primary UI.
 - **Streamlit app** (`app_v2.py`) — a secondary interface that calls the same API. Still
   functional but **frozen** (no further investment).
-- **`app_legacy.py`** — the original standalone Streamlit prototype, kept for reference
-  only; do not run in production.
+- **`app_legacy.py`** — the original standalone Streamlit prototype (OpenAI-dependent,
+  pre-API), superseded by `app_v2.py` and the React frontend; kept for reference.
 
 ## Architecture
 
@@ -112,6 +112,7 @@ Backend versions are pinned in `requirements.lock.txt` / `requirements-dev.lock.
 | **External data** | httpx 0.27.0 → Crossref, OpenAlex |
 | **Frontend** | React 18.2, Vite 6.1, Tailwind 3.4, TypeScript 7.0, @tanstack/react-query 5.101, react-router-dom 7.12, ~40 Radix UI primitives (shadcn/ui) |
 | **Secondary UI** | Streamlit 1.35.0 (`app_v2.py`) |
+| **Optional AI** | openai 1.35.7 — key-gated; powers the GPT "Smart Summary" in `app_v2.py` only when `OPENAI_API_KEY` is set. The FastAPI backend does not use it. |
 | **Tests** | pytest 9.1.1, pytest-asyncio 1.4.0 |
 
 ## Setup
