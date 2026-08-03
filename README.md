@@ -290,3 +290,7 @@ This is a single-user, local-first tool and an actively developed portfolio proj
 frontend redesign is currently in progress. Longer-term, exploratory product thinking
 lives in [VISION.md](VISION.md) — treat it as direction under evaluation, **not a
 committed roadmap.**
+
+## License
+
+[MIT](LICENSE) © 2026 Sameer Mogallur
