@@ -1,7 +1,7 @@
 # AIRA — AI Research Assistant
 
 AIRA analyzes a research-paper PDF for integrity and reproducibility signals. Upload a
-paper and it extracts the text (with an OCR fallback for scanned PDFs), verifies every
+paper and it extracts the text natively via `pypdf`, verifies every
 reference against [Crossref](https://www.crossref.org/) with confidence scoring, extracts
 statistical indicators (p-values, sample sizes, effect sizes, confidence intervals),
 computes a heuristic open-science transparency score (0–100, letter grade A–F), and
@@ -19,8 +19,9 @@ citation integrity and transparency — not a substitute for peer review.
 
 Everything below is implemented and running today:
 
-- **PDF text extraction** via `pypdf`, with an **OCR fallback** (Tesseract + Poppler) for
-  scanned documents.
+- **PDF text extraction** — native extraction via `pypdf` runs on ingest. OCR
+  (Tesseract + Poppler) is exposed as a separate endpoint (`/api/parse_pdf_ocr`) for
+  scanned documents; it is **not** an automatic fallback on the ingest path.
 - **Reference verification against Crossref** — DOI lookup and fuzzy/semantic title
   matching, each match confidence-scored and labelled `verified` / `suspicious` /
   `not_found`.
@@ -67,7 +68,8 @@ package (`main.py` for lifespan + CORS, `config.py`, `routers/`, `services/`, `s
 1. **Hash & dedup** — SHA-256 of the PDF bytes; an existing hash short-circuits and
    returns the stored paper (`200`), otherwise ingest proceeds (`201`).
 2. **Store** — the PDF is written to `data/pdfs/<sha256>.pdf`.
-3. **Extract** — native text extraction (or OCR fallback), plus section detection.
+3. **Extract** — native text extraction via `pypdf`, plus section detection. OCR is not
+   invoked here; a scanned PDF yields near-empty text and is flagged `failed_needs_ocr`.
 4. **Analyze** — references, in-text citations, statistics, and the integrity score run
    concurrently via `asyncio.gather`; reference verification calls Crossref (bounded by a
    semaphore).
@@ -272,7 +274,7 @@ runs `pytest tests/ -v`.
 
 ## Limitations & Current State
 
-Two caveats change how you should read the tool's output:
+Three caveats change how you should read the tool's output:
 
 1. **The integrity score is a heuristic and is not empirically validated.** It is a
    preliminary signal, not peer review — presented as open-science transparency markers,
@@ -280,6 +282,10 @@ Two caveats change how you should read the tool's output:
 2. **Title / author / year extraction is a crude first-line heuristic.** There is no
    GROBID or Crossref/OpenAlex metadata lookup; titles are approximate and authors/year
    are often left unpopulated at ingest.
+3. **Scanned / image-only PDFs are not handled end-to-end on the ingest path.** Native
+   extraction returns near-empty text, and the integrity scorer currently emits a
+   real-looking score (~65 / grade C) rather than flagging that extraction failed. This is
+   a known issue, tracked as row 1 of the prioritized backlog in [CLAUDE.md](CLAUDE.md).
 
 Engineering state, in brief: no test-coverage measurement; single-user with no auth; the
 add-to-project picker fetches the whole library (fine at current scale, won't scale past a

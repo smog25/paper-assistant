@@ -1,6 +1,6 @@
 # AIRA — AI Research Assistant
 
-AIRA analyzes research papers for integrity and reproducibility signals. Upload a PDF and it extracts text (with OCR fallback via Tesseract + Poppler), verifies every citation against the Crossref database with confidence scoring, extracts statistical indicators (p-values, sample sizes, effect sizes, confidence intervals), detects in-text citation markers, and returns a structured `IntegrityReport` with a heuristic integrity score (0–100, letter-grade A–F) based on open-science transparency markers.
+AIRA analyzes research papers for integrity and reproducibility signals. Upload a PDF and it extracts text natively via pypdf (OCR via Tesseract + Poppler is available as a separate `/api/parse_pdf_ocr` endpoint, not an automatic fallback on the ingest path), verifies every citation against the Crossref database with confidence scoring, extracts statistical indicators (p-values, sample sizes, effect sizes, confidence intervals), detects in-text citation markers, and returns a structured `IntegrityReport` with a heuristic integrity score (0–100, letter-grade A–F) based on open-science transparency markers.
 
 > **Product strategy:** the reframed product vision, market-research question list, UI-redesign scope, and rescoped roadmap live in [VISION.md](VISION.md) (2026-07-22). This file stays focused on technical architecture.
 
@@ -8,9 +8,9 @@ AIRA analyzes research papers for integrity and reproducibility signals. Upload 
 
 ```
 User → React frontend (Vite)   port 5173 ──┐
-User → Streamlit app_v2.py     port 8501 ──┤──▶ FastAPI app/ package   port 8000 ──▶ Crossref API
-                                             │         └── backend.py (3-line shim)       │
-                                             └──────────────────────────────────▶ SQLite data/aira.db
+User → Streamlit app_v2.py     port 8501 ──┼──▶ FastAPI app/ package   port 8000 ──▶ Crossref API
+                                           │      via backend.py (3-line shim)   ──▶ OpenAlex API
+                                           └───────────────────────────────────────▶ SQLite data/aira.db + PDFs data/pdfs/
 ```
 
 ### Key files
@@ -23,7 +23,7 @@ User → Streamlit app_v2.py     port 8501 ──┤──▶ FastAPI app/ packa
 | `app/db/models.py` | SQLAlchemy ORM: Paper, AnalysisReport, Reference, Project, ProjectPaper, Embedding |
 | `frontend/` | React + Vite + Tailwind + shadcn/ui — primary UI |
 | `app_v2.py` | Legacy Streamlit frontend — calls FastAPI backend; still functional, secondary path |
-| `app_legacy.py` | Original standalone Streamlit app (pre-API architecture, OpenAI-dependent, no Crossref, no OCR). Kept as reference only — do not run in production. |
+| `app_legacy.py` | Original standalone Streamlit app (pre-API architecture, OpenAI-dependent, no Crossref, no OCR). Superseded by `app_v2.py` and the React frontend; kept for reference. |
 
 ## Prerequisites (one-time)
 
