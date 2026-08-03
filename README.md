@@ -49,11 +49,10 @@ Everything below is implemented and running today:
 ## Architecture
 
 ```
-User → React frontend (Vite)   :5173 ──┐
-User → Streamlit (app_v2.py)   :8501 ──┤──▶ FastAPI (app/ package)  :8000 ──▶ Crossref API
-                                        │        └ backend.py (3-line shim)  ──▶ OpenAlex API
-                                        └───────────────────────────────────▶ SQLite (data/aira.db)
-                                                                                + PDFs (data/pdfs/)
+User → React frontend (Vite)  :5173 ──┐
+User → Streamlit (app_v2.py)  :8501 ──┼──▶ FastAPI (app/ package, :8000) ──▶ Crossref API
+                                      │     via backend.py (3-line shim) ──▶ OpenAlex API
+                                      └────────────────────────────────────▶ SQLite (data/aira.db) + PDFs (data/pdfs/)
 ```
 
 `backend.py` is a three-line shim (`from app.main import app`) so `uvicorn backend:app`,
