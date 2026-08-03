@@ -160,9 +160,38 @@ Base URL: `http://localhost:8000`
 - **SPECTER encode moved off the event loop** — `model.encode()` calls in `app/services/ingest.py` (`_try_store_embedding`, now async) and `app/services/references.py` (`_title_sims` call sites) run via `asyncio.to_thread`; the DB session never crosses the thread boundary. Concurrency stays bounded by `CROSSREF_SEMAPHORE` on the verification path.
 - **Week 2 Library UI + discovery backend** — paper read endpoints (`GET /api/papers` list with pagination envelope + latest-report join, `GET /api/papers/{id}` detail with parsed stored report); ingest metadata enrichment (title + DOI, see backlog note); `/similar` (cosine over stored SPECTER vectors) and `/related` (OpenAlex, cached, semaphore + retry mirroring the Crossref client); React Query frontend with `/library`, `/projects/:id`, `/papers/:id` reusing the dashboard components via the extracted `reportTransform.js`; **upload flow now ingests** (`POST /api/papers`) instead of the stateless `/api/analyze_pdf`, so analyzed papers persist to the library. Also fixed en route: the reference-verification DOI regex was broken (never matched — DOI branch was dead code) and the resurrected fast path is now guarded by title agreement. 88 tests green.
 
-### Planned next
-- **Title extraction is a crude first-line heuristic** (`_extract_title` in `app/services/ingest.py`: first substantial pre-Abstract line, filename fallback). Known-imprecise by design — revisit with GROBID or a Crossref/OpenAlex metadata lookup by DOI. Same for `authors`/`year`, which are still never populated at ingest.
-- **Add-to-project picker won't scale past a few hundred papers** (`ProjectDetail.jsx` fetches the whole library for the dropdown via `getAllPapers`). Fine at current scale; needs a searchable/paginated picker or a backend "papers not in project" query eventually.
+### Prioritized backlog (assessed 2026-08-03)
+
+Ranked by value-to-effort (best first). Type ∈ correctness / scale / polish; effort in
+minutes / hours / days. Verified first-hand against the code on 2026-08-03; supersedes the
+old two-bullet "Planned next" (the title-heuristic and picker items are folded in as rows
+6→#8 and 8→DOI-enrichment below).
+
+> **Verified 2026-08-03 — already complete, do not re-raise:** the DOI-verification fast
+> path is guarded by title agreement (`app/services/references.py:96-106`) and is exercised
+> by tests (`tests/test_references.py::test_doi_match_with_title_agreement_is_verified` and
+> `::test_wrong_but_resolvable_doi_is_not_verified`).
+
+| # | Item | Type | Effort | What it buys (and rabbit-hole warnings) |
+|---|------|------|--------|------------------------------------------|
+| 1 | **Guard the integrity score on failed extraction.** When native extraction yields `<100` chars (`extraction_method=="failed_needs_ocr"`, `app/services/ingest.py:123-132`), emit a null/`needs_ocr` grade instead of the current **65/C**. Ingest never runs OCR (only the separate `/api/parse_pdf_ocr` endpoint does), so a scanned PDF is silently graded on empty text. | correctness | hours | Stops the tool silently mis-grading unreadable PDFs — the worst failure mode for an integrity tool. **Rabbit hole:** don't instead try to wire OCR into ingest (page caps, slow Tesseract path) — that's days; do the guard. |
+| 2 | **Add `pytest-cov` + coverage in CI.** No coverage tooling today (not in dev lockfiles; no pytest config). | polish | 30–60 min | Reveals the untested core (row 3); a portfolio signal. |
+| 3 | **Unit-test the scoring core.** `integrity.py`, `statistics.py`, `pdf.py`, `citations.py` and the pdf/analysis routers have no direct unit tests. | correctness | 2–3 h | Locks the scoring logic; a regression net; would have caught row 1. |
+| 4 | **Fix the "AI Summary" mislabel.** `SummaryAccordion.jsx` is labelled "AI Summary" but renders parsed report data, not LLM output. | polish | minutes | Honesty in an integrity-branded UI. |
+| 5 | **Cap ingest embedding concurrency.** `_try_store_embedding` (`ingest.py:219`) calls `asyncio.to_thread(model.encode,…)` with no semaphore (the verification path is correctly bounded by `CROSSREF_SEMAPHORE`; this is the ingest path). | scale | 30–60 min | Cheap OOM insurance under concurrent uploads; low probability on a single-user tool. |
+| 6 | **Log instead of silently swallowing corrupt report JSON.** `ingest.py:81-84` does `except Exception: pass` on the dedup path (the router path logs a warning). | polish | minutes | Surfaces DB corruption instead of hiding it. |
+| 7 | **Benchmark SPECTER vs a general-purpose embedding model.** No benchmark artifacts exist. | validation | hours–1 day | Defensibility of the model choice — a real talking point for ML/PI readers. |
+| 8 | **DOI-based metadata enrichment** (folds in the old title-heuristic note). Look up title/authors/year via Crossref/OpenAlex by DOI. Today `_extract_title` (`ingest.py:35-58`) is a first-line/filename heuristic and `authors`/`year` are never populated at ingest. | correctness | hours (DOI lookup) | Real titles + populated authors/year on every paper. **Rabbit hole:** the GROBID variant is a new heavyweight service dependency — days. |
+| 9 | **Validate the integrity score against ground truth.** No labelled set, no inter-rater comparison — the score is an unvalidated heuristic (as the disclaimer states). | correctness | days | Turns "toy heuristic" into a defensible signal — highest strategic value. **Rabbit hole:** unbounded; needs a labelled corpus + methodology, can eat weeks. |
+| 10 | **Content-aware dedup.** SHA-256 hashes raw PDF bytes (`ingest.py:68`), so the same paper from two sources (re-encoded bytes) becomes two library entries. | correctness / scale | days | One library entry per paper regardless of source bytes. **Rabbit hole:** "just change the hash" hides a dedup-key migration, DOI-less-paper handling, and backfill of existing rows. |
+| 11 | **Paginated / "papers-not-in-project" picker** (folds in the old picker note). `ProjectDetail.jsx` → `getAllPapers` loads the whole library; backend has only an in-project filter. | scale | half-day | Picker scales past a few hundred papers; low current impact. |
+| 12 | **Resolve the Smart Summary parity gap.** `app_v2.py:462-543` has a GPT-3.5 map-reduce summary the React UI lacks; no backend LLM endpoint exists. **Recommendation: retire** the Streamlit-only feature. | polish | minutes to retire | Removes a confusing parity gap. **Rabbit hole:** *porting* it = a key-gated backend LLM endpoint + UI + cost controls — a project, not a task. |
+| 13 | **Build-verify the Docker setup.** Authored without a Docker daemon on the dev machine. | polish | 1–2 h *if* Docker available | Confirms the reviewer setup path. **Rabbit hole:** no local Docker → can't verify without new infra. |
+
+**If I had two hours next, I'd do row 1** (guard the score on failed extraction). It removes
+a live, demoable, user-facing wrong output — a confident "C" on a scanned PDF AIRA never
+read — which for an *integrity* tool costs more credibility than the missing coverage number
+(row 2, the runner-up). Row 3 then locks the fix with a test.
 
 ### Deferred (documented — stubbed as "Coming Soon" in the UI)
 
