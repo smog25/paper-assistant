@@ -101,7 +101,7 @@ httpx==0.27.0
     #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
     #   huggingface-hub
     #   openai
-huggingface-hub==1.22.0
+huggingface-hub==1.25.1
     # via
     #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
     #   sentence-transformers
