@@ -422,7 +422,7 @@ uvloop==0.22.1
     # via
     #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
     #   uvicorn
-watchfiles==0.21.0
+watchfiles==1.2.0
     # via
     #   -c /private/tmp/claude-501/-Users-samsharma-Projects-paper-assistant/74d5071d-3609-403e-8c7d-a1d2c5b5be6d/scratchpad/venv-constraints.txt
     #   -r /Users/samsharma/Projects/paper-assistant/requirements.txt
